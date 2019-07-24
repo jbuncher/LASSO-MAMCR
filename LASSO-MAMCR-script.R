@@ -120,54 +120,54 @@ pretests_females = subset(pretests, pretests$female == 1)
 posttests_males = subset(posttests, posttests$male == 1)
 posttests_females = subset(posttests, posttests$female == 1)
 
-# Find means of these subsets
-library(tidyr)
-library(dplyr)
-ctt_male_post_diff = sapply(select(posttests_males, post_1_C:post_30_C), mean, na.rm = TRUE)
-ctt_female_post_diff = sapply(select(posttests_females, post_1_C:post_30_C), mean, na.rm = TRUE)
-ctt_male_pre_diff = sapply(select(pretests_males, pre_1_C:pre_30_C), mean, na.rm = TRUE)
-ctt_female_pre_diff = sapply(select(pretests_females, pre_1_C:pre_30_C), mean, na.rm = TRUE)
+# # Find means of these subsets
+# library(tidyr)
+# library(dplyr)
+# ctt_male_post_diff = sapply(select(posttests_males, post_1_C:post_30_C), mean, na.rm = TRUE)
+# ctt_female_post_diff = sapply(select(posttests_females, post_1_C:post_30_C), mean, na.rm = TRUE)
+# ctt_male_pre_diff = sapply(select(pretests_males, pre_1_C:pre_30_C), mean, na.rm = TRUE)
+# ctt_female_pre_diff = sapply(select(pretests_females, pre_1_C:pre_30_C), mean, na.rm = TRUE)
 
-# Function that generalizes "mean" so it's bootstrappable
-library(boot)
-bootstrapmean <- function(x, d) {
-  sampledmean <- mean(x[d], na.rm = TRUE)
-  return(sampledmean)
-}
+# # Function that generalizes "mean" so it's bootstrappable
+# library(boot)
+# bootstrapmean <- function(x, d) {
+#   sampledmean <- mean(x[d], na.rm = TRUE)
+#   return(sampledmean)
+# }
 
-# Function that finds the error bars on our means, takes the array/matrix/tibble of "scores" (1s or 0s)
-# and returns a vector with the standard deviation of hte bootstrapped means as each element, 
-# with the names of the columns taken from the name of the "scores"
-bootstrap_errorbar <- function(scores){
-  error <- vector(length = length(scores), mode = "numeric")
-  names(error) <- colnames(scores)
-  bootstrapresults <- lapply(scores, boot, statistic = bootstrapmean, R = 1000)
-  for (i in seq_along(bootstrapresults)){
-    error[[i]] <- sd(bootstrapresults[[i]][["t"]])
-  }
-  return(error)
-}
-
-ctt_male_post_error <- bootstrap_errorbar(select(posttests_males, post_1_C:post_30_C))
-ctt_male_pre_error <- bootstrap_errorbar(select(pretests_males, pre_1_C:pre_30_C))
-ctt_female_post_error <- bootstrap_errorbar(select(posttests_females, post_1_C:post_30_C))
-ctt_female_pre_error <- bootstrap_errorbar(select(pretests_females, pre_1_C:pre_30_C))
-
-psycho = data.frame(ctt_male_pre_diff, ctt_male_pre_error, ctt_male_post_diff, ctt_male_post_error, ctt_female_pre_diff, ctt_female_pre_error, ctt_female_post_diff, ctt_female_post_error)
-row.names(psycho) <- paste("Q", 1:30, sep = "")
-
-ctt_male_delta = ctt_male_post_diff - ctt_male_pre_diff
-ctt_female_delta = ctt_female_post_diff - ctt_female_pre_diff
-ctt_male_delta_se = sqrt(ctt_male_post_error**2 + ctt_male_pre_error**2)
-ctt_female_delta_se = sqrt(ctt_female_post_error**2 + ctt_female_pre_error**2)
-ctt_delta_delta = ctt_male_delta - ctt_female_delta
-ctt_delta_se = sqrt(ctt_male_delta_se**2 + ctt_female_delta_se**2)
-
-male_delta <- data.frame("Q" = 1:30, ctt_delta = ctt_male_delta, "ctt_se" = ctt_male_delta_se, "gender" = "male")
-female_delta <- data.frame("Q" = 1:30, ctt_delta = ctt_female_delta, "ctt_se" = ctt_female_delta_se, "gender" = "female")
-delta_delta <- data.frame("Q" = 1:30, ctt_delta = ctt_delta_delta, "ctt_se" = ctt_delta_se, "gender" = "delta")
-
-delta_frame = rbind(male_delta, female_delta, delta_delta)
+# # Function that finds the error bars on our means, takes the array/matrix/tibble of "scores" (1s or 0s)
+# # and returns a vector with the standard deviation of hte bootstrapped means as each element, 
+# # with the names of the columns taken from the name of the "scores"
+# bootstrap_errorbar <- function(scores){
+#   error <- vector(length = length(scores), mode = "numeric")
+#   names(error) <- colnames(scores)
+#   bootstrapresults <- lapply(scores, boot, statistic = bootstrapmean, R = 1000)
+#   for (i in seq_along(bootstrapresults)){
+#     error[[i]] <- sd(bootstrapresults[[i]][["t"]])
+#   }
+#   return(error)
+# }
+# 
+# ctt_male_post_error <- bootstrap_errorbar(select(posttests_males, post_1_C:post_30_C))
+# ctt_male_pre_error <- bootstrap_errorbar(select(pretests_males, pre_1_C:pre_30_C))
+# ctt_female_post_error <- bootstrap_errorbar(select(posttests_females, post_1_C:post_30_C))
+# ctt_female_pre_error <- bootstrap_errorbar(select(pretests_females, pre_1_C:pre_30_C))
+# 
+# psycho = data.frame(ctt_male_pre_diff, ctt_male_pre_error, ctt_male_post_diff, ctt_male_post_error, ctt_female_pre_diff, ctt_female_pre_error, ctt_female_post_diff, ctt_female_post_error)
+# row.names(psycho) <- paste("Q", 1:30, sep = "")
+# 
+# ctt_male_delta = ctt_male_post_diff - ctt_male_pre_diff
+# ctt_female_delta = ctt_female_post_diff - ctt_female_pre_diff
+# ctt_male_delta_se = sqrt(ctt_male_post_error**2 + ctt_male_pre_error**2)
+# ctt_female_delta_se = sqrt(ctt_female_post_error**2 + ctt_female_pre_error**2)
+# ctt_delta_delta = ctt_male_delta - ctt_female_delta
+# ctt_delta_se = sqrt(ctt_male_delta_se**2 + ctt_female_delta_se**2)
+# 
+# male_delta <- data.frame("Q" = 1:30, ctt_delta = ctt_male_delta, "ctt_se" = ctt_male_delta_se, "gender" = "male")
+# female_delta <- data.frame("Q" = 1:30, ctt_delta = ctt_female_delta, "ctt_se" = ctt_female_delta_se, "gender" = "female")
+# delta_delta <- data.frame("Q" = 1:30, ctt_delta = ctt_delta_delta, "ctt_se" = ctt_delta_se, "gender" = "delta")
+# 
+# delta_frame = rbind(male_delta, female_delta, delta_delta)
 
 # Calculate all of the Pearson's phi correlations (sqrt(chisq/N))
 # This calculates one, we'll generalize in a bit
@@ -176,112 +176,112 @@ delta_frame = rbind(male_delta, female_delta, delta_delta)
 # calculate the chi-squared statistic, the total number of students,
 # and the pearson correlation phi
 
-psycho$phi <- NA
-psycho$phi_p <- NA
-postscores <- select(posttests, post_1_C:post_30_C)
-for (i in seq_along(postscores)){
-  tbt <- with(posttests, xtabs(~ male + postscores[[i]]))
-  xsqtest <- chisq.test(tbt)
-  print(xsqtest)
-  xsq <- xsqtest$statistic[[1]]
-  pvalue <- xsqtest$p.value
-  N <- sum(tbt)
-  phi <- sqrt(xsq/N)
-  psycho$phi[[i]] <- phi
-  psycho$phi_p <- pvalue
-}
+# psycho$phi <- NA
+# psycho$phi_p <- NA
+# postscores <- select(posttests, post_1_C:post_30_C)
+# for (i in seq_along(postscores)){
+#   tbt <- with(posttests, xtabs(~ male + postscores[[i]]))
+#   xsqtest <- chisq.test(tbt)
+#   print(xsqtest)
+#   xsq <- xsqtest$statistic[[1]]
+#   pvalue <- xsqtest$p.value
+#   N <- sum(tbt)
+#   phi <- sqrt(xsq/N)
+#   psycho$phi[[i]] <- phi
+#   psycho$phi_p <- pvalue
+# }
 
-# IRT Stuff
-library(ltm)
-
-irt.post_male <- ltm(select(posttests_males, post_1_C:post_30_C) ~ z1, IRT.param = TRUE)
-irt.post_female <- ltm(select(posttests_females, post_1_C:post_30_C) ~ z1, IRT.param = TRUE)
-irt.pre_male <- ltm(select(pretests_males, pre_1_C:pre_30_C) ~ z1, IRT.param = TRUE)
-irt.pre_female <- ltm(select(pretests_females, pre_1_C:pre_30_C) ~ z1, IRT.param = TRUE)
-
-irt_male_post_diff <- summary(irt.post_male)$coefficients[,1]
-irt_female_post_diff <- summary(irt.post_female)$coefficients[,1]
-irt_male_pre_diff <- summary(irt.pre_male)$coefficients[,1]
-irt_female_pre_diff <- summary(irt.pre_female)$coefficients[,1]
-
-irt_male_post_se <- summary(irt.post_male)$coefficients[,2]
-irt_female_post_se <- summary(irt.post_female)$coefficients[,2]
-irt_male_pre_se <- summary(irt.pre_male)$coefficients[,2]
-irt_female_pre_se <- summary(irt.pre_female)$coefficients[,2]
-
-psycho$irt_male_post_diff <- irt_male_post_diff[1:30]
-psycho$irt_female_post_diff <- irt_female_post_diff[1:30]
-psycho$irt_male_pre_diff <- irt_male_pre_diff[1:30]
-psycho$irt_female_pre_diff <- irt_female_pre_diff[1:30]
-
-psycho$irt_male_post_se <- irt_male_post_se[1:30]
-psycho$irt_female_post_se <- irt_female_post_se[1:30]
-psycho$irt_male_pre_se <- irt_male_pre_se[1:30]
-psycho$irt_female_pre_se <- irt_female_pre_se[1:30]
+# # IRT Stuff
+# library(ltm)
+# 
+# irt.post_male <- ltm(select(posttests_males, post_1_C:post_30_C) ~ z1, IRT.param = TRUE)
+# irt.post_female <- ltm(select(posttests_females, post_1_C:post_30_C) ~ z1, IRT.param = TRUE)
+# irt.pre_male <- ltm(select(pretests_males, pre_1_C:pre_30_C) ~ z1, IRT.param = TRUE)
+# irt.pre_female <- ltm(select(pretests_females, pre_1_C:pre_30_C) ~ z1, IRT.param = TRUE)
+# 
+# irt_male_post_diff <- summary(irt.post_male)$coefficients[,1]
+# irt_female_post_diff <- summary(irt.post_female)$coefficients[,1]
+# irt_male_pre_diff <- summary(irt.pre_male)$coefficients[,1]
+# irt_female_pre_diff <- summary(irt.pre_female)$coefficients[,1]
+# 
+# irt_male_post_se <- summary(irt.post_male)$coefficients[,2]
+# irt_female_post_se <- summary(irt.post_female)$coefficients[,2]
+# irt_male_pre_se <- summary(irt.pre_male)$coefficients[,2]
+# irt_female_pre_se <- summary(irt.pre_female)$coefficients[,2]
+# 
+# psycho$irt_male_post_diff <- irt_male_post_diff[1:30]
+# psycho$irt_female_post_diff <- irt_female_post_diff[1:30]
+# psycho$irt_male_pre_diff <- irt_male_pre_diff[1:30]
+# psycho$irt_female_pre_diff <- irt_female_pre_diff[1:30]
+# 
+# psycho$irt_male_post_se <- irt_male_post_se[1:30]
+# psycho$irt_female_post_se <- irt_female_post_se[1:30]
+# psycho$irt_male_pre_se <- irt_male_pre_se[1:30]
+# psycho$irt_female_pre_se <- irt_female_pre_se[1:30]
 
 
 library(dplyr)
 # DIF stuff
-library(difR)
-difMH(select(posttests, post_1_C:post_30_C), posttests$male, 1, p.adjust.method = "bonferroni")
+# library(difR)
+# difMH(select(posttests, post_1_C:post_30_C), posttests$male, 1, p.adjust.method = "bonferroni")
 
 
 # Plots
 library(ggplot2)
 
-ggplot(psycho, aes(x = ctt_female_post_diff, y = ctt_male_post_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
-  geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
-  xlab("CTT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
-  ylab("CTT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
-  geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
-  xlim(0,1) +
-  ylim(0,1) +
-  geom_errorbar(ymax = ctt_male_post_diff + ctt_male_post_error, ymin = ctt_male_post_diff - ctt_male_post_error, width = 0.01) +
-  geom_errorbarh(xmax = ctt_female_post_diff + ctt_female_post_error, xmin = ctt_female_post_diff - ctt_female_post_error, height = 0.01) +
-  geom_text(nudge_x = -0.02, nudge_y = 0.02) +
-  geom_rect(aes(xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8), fill = "blue", alpha = 0.003)
-
-ggplot(psycho, aes(x = ctt_female_pre_diff, y = ctt_male_pre_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
-  geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
-  xlab("CTT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
-  ylab("CTT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
-  geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
-  xlim(0,1) +
-  ylim(0,1) +
-  geom_errorbar(ymax = ctt_male_pre_diff + ctt_male_pre_error, ymin = ctt_male_pre_diff - ctt_male_pre_error, width = 0.01) +
-  geom_errorbarh(xmax = ctt_female_pre_diff + ctt_female_pre_error, xmin = ctt_female_pre_diff - ctt_female_pre_error, height = 0.01) + 
-  geom_text(nudge_x = -0.02, nudge_y = 0.02) +
-  geom_rect(aes(xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8), fill = "blue", alpha = 0.003)
-
-ggplot(delta_frame, aes(x = Q, y = ctt_delta, fill = gender)) + # creates a plot object with x axis and categories
-  geom_col(position = "dodge") +      # makes the histogram, transparency, and ensures bars don't overlap
-  geom_errorbar(data = delta_frame, aes(ymax = ctt_delta + ctt_se, ymin = ctt_delta - ctt_se), width = 0.5, position = position_dodge(0.8)) +
-  xlab("FCI Question #") +                                    # Sets horizontal axis title
-  ylab("Post - Pre (%)") +                           # Sets vertical axis title
-  theme(legend.title=element_blank()) +                  # Leaves the legend title blank
-  scale_fill_discrete(labels = c("Male","Female","M - F"))  # Changes the labels in the legend
-
-ggplot(psycho, aes(x = irt_female_post_diff, y = irt_male_post_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
-  geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
-  xlab("IRT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
-  ylab("IRT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
-  geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
-  xlim(-4, 4) +
-  ylim(-4, 4) +
-  geom_errorbar(aes(ymax = irt_male_post_diff + irt_male_post_se, ymin = irt_male_post_diff - irt_male_post_se), width = 0.1) +
-  geom_errorbarh(aes(xmax = irt_female_post_diff + irt_female_post_se, xmin = irt_female_post_diff - irt_female_post_se), height = 0.1) +
-  geom_text(nudge_x = -0.15, nudge_y = 0.15) 
-
-ggplot(psycho, aes(x = irt_female_pre_diff, y = irt_male_pre_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
-  geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
-  xlab("IRT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
-  ylab("IRT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
-  geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
-  xlim(-4, 4) +
-  ylim(-4, 4) +
-  geom_errorbar(aes(ymax = irt_male_pre_diff + irt_male_pre_se, ymin = irt_male_pre_diff - irt_male_pre_se), width = 0.1) +
-  geom_errorbarh(aes(xmax = irt_female_pre_diff + irt_female_pre_se, xmin = irt_female_pre_diff - irt_female_pre_se), height = 0.1) +
-  geom_text(nudge_x = -0.15, nudge_y = 0.15) 
+# ggplot(psycho, aes(x = ctt_female_post_diff, y = ctt_male_post_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
+#   geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
+#   xlab("CTT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
+#   ylab("CTT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
+#   geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
+#   xlim(0,1) +
+#   ylim(0,1) +
+#   geom_errorbar(ymax = ctt_male_post_diff + ctt_male_post_error, ymin = ctt_male_post_diff - ctt_male_post_error, width = 0.01) +
+#   geom_errorbarh(xmax = ctt_female_post_diff + ctt_female_post_error, xmin = ctt_female_post_diff - ctt_female_post_error, height = 0.01) +
+#   geom_text(nudge_x = -0.02, nudge_y = 0.02) +
+#   geom_rect(aes(xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8), fill = "blue", alpha = 0.003)
+# 
+# ggplot(psycho, aes(x = ctt_female_pre_diff, y = ctt_male_pre_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
+#   geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
+#   xlab("CTT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
+#   ylab("CTT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
+#   geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
+#   xlim(0,1) +
+#   ylim(0,1) +
+#   geom_errorbar(ymax = ctt_male_pre_diff + ctt_male_pre_error, ymin = ctt_male_pre_diff - ctt_male_pre_error, width = 0.01) +
+#   geom_errorbarh(xmax = ctt_female_pre_diff + ctt_female_pre_error, xmin = ctt_female_pre_diff - ctt_female_pre_error, height = 0.01) + 
+#   geom_text(nudge_x = -0.02, nudge_y = 0.02) +
+#   geom_rect(aes(xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8), fill = "blue", alpha = 0.003)
+# 
+# ggplot(delta_frame, aes(x = Q, y = ctt_delta, fill = gender)) + # creates a plot object with x axis and categories
+#   geom_col(position = "dodge") +      # makes the histogram, transparency, and ensures bars don't overlap
+#   geom_errorbar(data = delta_frame, aes(ymax = ctt_delta + ctt_se, ymin = ctt_delta - ctt_se), width = 0.5, position = position_dodge(0.8)) +
+#   xlab("FCI Question #") +                                    # Sets horizontal axis title
+#   ylab("Post - Pre (%)") +                           # Sets vertical axis title
+#   theme(legend.title=element_blank()) +                  # Leaves the legend title blank
+#   scale_fill_discrete(labels = c("Male","Female","M - F"))  # Changes the labels in the legend
+# 
+# ggplot(psycho, aes(x = irt_female_post_diff, y = irt_male_post_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
+#   geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
+#   xlab("IRT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
+#   ylab("IRT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
+#   geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
+#   xlim(-4, 4) +
+#   ylim(-4, 4) +
+#   geom_errorbar(aes(ymax = irt_male_post_diff + irt_male_post_se, ymin = irt_male_post_diff - irt_male_post_se), width = 0.1) +
+#   geom_errorbarh(aes(xmax = irt_female_post_diff + irt_female_post_se, xmin = irt_female_post_diff - irt_female_post_se), height = 0.1) +
+#   geom_text(nudge_x = -0.15, nudge_y = 0.15) 
+# 
+# ggplot(psycho, aes(x = irt_female_pre_diff, y = irt_male_pre_diff, label=rownames(psycho))) +  # This creates a graph object using our data and defining x and y axes
+#   geom_point() +                           # This tells ggplot to take that object and make it a scatterplot
+#   xlab("IRT Difficulty (Female)") +           # Adds a string specifying the label on the x-axis
+#   ylab("IRT Difficulty (Male)") +          # Adds a string specifying the label on the y-axis
+#   geom_abline()   +                         # Adds a line with slope of 1 and intercept of 0
+#   xlim(-4, 4) +
+#   ylim(-4, 4) +
+#   geom_errorbar(aes(ymax = irt_male_pre_diff + irt_male_pre_se, ymin = irt_male_pre_diff - irt_male_pre_se), width = 0.1) +
+#   geom_errorbarh(aes(xmax = irt_female_pre_diff + irt_female_pre_se, xmin = irt_female_pre_diff - irt_female_pre_se), height = 0.1) +
+#   geom_text(nudge_x = -0.15, nudge_y = 0.15) 
 #  geom_rect(aes(xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8), fill = "blue", alpha = 0.003)
 
 
