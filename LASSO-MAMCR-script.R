@@ -56,21 +56,6 @@ submissionfilter$post_duration[submissionfilter$post_duration < 300] <- NA
 timefilter <- subset(submissionfilter, !is.na(pre_duration) | !is.na(post_duration))
 submissionfilterstudents <- nrow(timefilter)
 
-# # Next we'll drop students that do not agree to participate, either on the pre or post, and see how
-# # many we lose at each stage
-# prefilter <- LASSO[LASSO$pre_agree_to_participate == "I agree to participate" | LASSO$pre_agree_to_participate == "I agree to share",]
-# prefilterstudents <- nrow(prefilter)
-# 
-# postfilter <- prefilter[prefilter$post_agree_to_participate == "I agree to participate" | prefilter$post_agree_to_participate == "I agree to share",]
-# postfilterstudents <- nrow(postfilter)
-
-# # Filter out students that took less than 5 minutes on either the pretest or the posttest
-# pre5filter <- adminfilter[adminfilter$pre_duration > 300 & !is.na(adminfilter$pre_duration),]
-# pre5filterstudents <- nrow(pre5filter)
-# 
-# post5filter <- pre5filter[pre5filter$post_duration > 300 & !is.na(pre5filter$post_duration),]
-# post5filterstudents <- nrow(post5filter)
-
 # Filter out students who answered less than 80% of the questions on either the pretest or the post
 pre80filter <- post5filter[post5filter$pre_answered > 80,]
 pre80filterstudents <- nrow(pre80filter)
