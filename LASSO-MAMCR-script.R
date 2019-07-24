@@ -1,5 +1,5 @@
 # load the data
-load("NDSU_data_6_19")
+load("../LASSO-R/NDSU_data_6_19")
 
 # create new dataset that pulls student_id (2), student_or_la (3), pre_agree_to_participate(4)
 # pre_duration(6), post_agree_to_participate(7), post_duration (9), pre_answered (10),
